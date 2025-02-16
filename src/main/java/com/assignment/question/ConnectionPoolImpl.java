@@ -1,19 +1,10 @@
 package com.assignment.question;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /*
-Implementation v1: FIXED - You are responsible for initializing the connection pool
-
-[INFO] Results:
-[INFO] 
-[ERROR] Failures: 
-[ERROR]   ConnectionPoolTest.testAvailableConnectionsCount:164 The available connections count should decrease after obtaining connections ==> expected: <-2> but was: <0>
-[ERROR]   ConnectionPoolTest.testGetConnection:125 A valid connection should be returned ==> expected: not <null>
-[ERROR]   ConnectionPoolTest.testReleaseConnection:141 A valid connection should be returned ==> expected: not <null>
-[INFO] 
-[ERROR] Tests run: 7, Failures: 3, Errors: 0, Skipped: 0
-
+Implementation v2: Using Appropriate Data Structure - Queue (TA)
 */
 
 public class ConnectionPoolImpl implements ConnectionPool {
@@ -22,9 +13,8 @@ public class ConnectionPoolImpl implements ConnectionPool {
     private static volatile ConnectionPoolImpl instance;
     private Integer maxConnections;
     // Thread safe collection
-    private ConcurrentHashMap<DatabaseConnection, Boolean> availableDBConnections;
-    private ConcurrentHashMap<DatabaseConnection, Boolean> allocatedDBConnections;
-
+    private Queue<DatabaseConnection> availableDBConnections;
+    
     // step 2: make the CTOR private
     private ConnectionPoolImpl(int maxConnections) {
         this.maxConnections = maxConnections;
@@ -47,36 +37,24 @@ public class ConnectionPoolImpl implements ConnectionPool {
 
     @Override
     public void initializePool() {
-        this.availableDBConnections = new ConcurrentHashMap<>();
+        this.availableDBConnections = new LinkedList<>();
         for (int i = 0; i < this.maxConnections; i++)
-            this.availableDBConnections.put(new DatabaseConnection(), true);
+            this.availableDBConnections.add(new DatabaseConnection());
     }
 
     @Override
     public DatabaseConnection getConnection() {
-        if (this.availableDBConnections == null || this.availableDBConnections.size() == 0)
-            return null;
-        DatabaseConnection dbConnection = this.availableDBConnections.keys().nextElement();
-        this.availableDBConnections.remove(dbConnection);
-        if (this.allocatedDBConnections == null)
-            this.allocatedDBConnections = new ConcurrentHashMap<>();
-        this.allocatedDBConnections.put(dbConnection, false);
-        return dbConnection;
+        return this.availableDBConnections.poll();
     }
 
     @Override
     public void releaseConnection(DatabaseConnection connection) {
-        if (this.allocatedDBConnections != null && this.allocatedDBConnections.size() > 0) {
-            this.allocatedDBConnections.remove(connection);
-            this.availableDBConnections.put(connection, true);
-        }
+        this.availableDBConnections.add(connection);
     }
 
     @Override
     public int getAvailableConnectionsCount() {
-        if (this.availableDBConnections != null)
-            return this.availableDBConnections.size();
-        return 0;
+        return this.availableDBConnections.size();
     }
 
     @Override
