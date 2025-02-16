@@ -5,6 +5,8 @@ import org.springframework.boot.logging.LogLevel;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,23 +14,23 @@ import java.nio.file.Paths;
 
 public class LoggerImplTest {
     @Test
-    void testPrintWriter() throws IOException {
+    void testFileWriter() throws IOException {
         LoggerImpl logger = LoggerImpl.getInstance();
-        String file = "PrintWriter.log";
+        String file = "FileWriter.log";
         logger.setLogFile(file);
         assertEquals(file, logger.getLogFile());
 
-        logger.log(LogLevel.INFO, "Gandhi II");
+        logger.log(LogLevel.INFO, "Gandhi Bot");
         logger.flush();
-        Path filePath = Paths.get(file);
-        System.out.println("Logger filePath: " + filePath);
-        String actual = new String(Files.readAllBytes(filePath));
-        System.out.println("From log: '" + actual + "'");
-        assertTrue(actual.contains("INFO Gandhi II"));
-
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file));) {
+            String actual = bufferedReader.readLine();
+            System.out.println("From log: '" + actual + "'");
+            assertTrue(actual.contains("INFO Gandhi Bot"));
+        }
+        
         logger.close();
         Exception exception = assertThrows(IllegalStateException.class, () -> {
-            logger.log(LogLevel.ERROR, "Bapu");
+            logger.log(LogLevel.ERROR, "Bappi Bapu");
         });
         assertEquals("Logger is not initialized!", exception.getMessage());
     }

@@ -1,12 +1,12 @@
 package com.assignment.question;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import org.springframework.boot.logging.LogLevel;
 
 public class LoggerImpl implements Logger {
-    private PrintWriter printWriter;  // Part 2: v1 - using PrintWriter
+    private FileWriter fileWriter;  // Part 2: v2 - using FileWriter
     private String filePath;
 
     // Part 1: Implement Singleton - DCL (Double Checked Lock)
@@ -35,17 +35,21 @@ public class LoggerImpl implements Logger {
     // Part 2: Implement Logger
     @Override
     public void log(LogLevel level, String message) {
-        if (this.printWriter == null)
+        if (this.fileWriter == null)
             throw new IllegalStateException("Logger is not initialized!");
-        this.printWriter.println(java.time.ZonedDateTime.now() + " " + level + " " + message);
+        try {
+            this.fileWriter.write(java.time.ZonedDateTime.now() + " " + level + " " + message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void setLogFile(String filePath) {
         try {
-            this.printWriter = new PrintWriter(filePath);
+            this.fileWriter = new FileWriter(filePath);
             this.filePath = filePath;
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         
@@ -58,16 +62,24 @@ public class LoggerImpl implements Logger {
 
     @Override
     public void flush() {
-        if (this.printWriter == null)
+        if (this.fileWriter == null)
             throw new IllegalStateException("Logger is not initialized. Cannot flush!");
-        this.printWriter.flush();
+        try {
+            this.fileWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void close() {
-        if (this.printWriter == null)
+        if (this.fileWriter == null)
             throw new IllegalStateException("Logger is not initialized. Cannot close!");
-        this.printWriter.close();
-        this.printWriter = null;
+        try {
+            this.fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.fileWriter = null;
     }
 }
