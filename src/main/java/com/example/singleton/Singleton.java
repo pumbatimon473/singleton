@@ -4,20 +4,20 @@ package com.example.singleton;
  * Design Pattern: Singleton
  * - Type: Creational
  * 
- * Implementation: v2
- * - Eager Initialization
+ * Implementation: v3
+ * - Using synchronized method
  * 
  * Pros:
- * - Simple
+ * - Lazy initialization - The object is initialized on demand
  * - Thread Safe
  * 
  * Cons:
- * - The object is initialized even when it is not needed
- * (The object is initialized as soon as the class is loaded)
+ * - Allows only 1 thread to access the method: getInstance()
+ *  -- Slow
  */
 class Singleton {
-    // step 1: initialize a private static var of type Singleton
-    private static final Singleton instance = new Singleton();
+    // step 1: declare a private static var of type Singleton
+    private static Singleton instance;
 
     // step 2: make the CTOR private
     private Singleton() {
@@ -25,7 +25,9 @@ class Singleton {
     }
 
     // step 3: provide a global access interface
-    public static Singleton getInstance() {
+    public static synchronized Singleton getInstance() {
+        if (instance == null)
+            instance = new Singleton();
         return instance;
     }
 }
