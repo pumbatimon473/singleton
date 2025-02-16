@@ -4,18 +4,20 @@ package com.example.singleton;
  * Design Pattern: Singleton
  * - Type: Creational
  * 
- * Implementation: v1
- * - Very crude implementation - Not Thread Safe
+ * Implementation: v2
+ * - Eager Initialization
  * 
  * Pros:
  * - Simple
+ * - Thread Safe
  * 
  * Cons:
- * - Works only in single threaded env (Not thread safe)
+ * - The object is initialized even when it is not needed
+ * (The object is initialized as soon as the class is loaded)
  */
 class Singleton {
-    // step 1: declare a private static var of type Singleton
-    private static Singleton instance;
+    // step 1: initialize a private static var of type Singleton
+    private static final Singleton instance = new Singleton();
 
     // step 2: make the CTOR private
     private Singleton() {
@@ -24,8 +26,6 @@ class Singleton {
 
     // step 3: provide a global access interface
     public static Singleton getInstance() {
-        if (instance == null)
-            instance = new Singleton();
         return instance;
     }
 }
